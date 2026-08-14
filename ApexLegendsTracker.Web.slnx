@@ -1,8 +1,8 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/ApexLegendsTracker.Web/ApexLegendsTracker.Web.csproj" />
+  <Folder Name="/ApexLegendsTracker.Web/">
+    <Project Path="ApexLegendsTracker.Web/ApexLegendsTracker.Web.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/ApexLegendsTracker.Web.Tests/ApexLegendsTracker.Web.Tests.csproj" />
+  <Folder Name="/ApexLegendsTracker.Web/Tests/">
+    <Project Path="ApexLegendsTracker.Web.Tests/ApexLegendsTracker.Web.Tests.csproj" />
   </Folder>
 </Solution>
