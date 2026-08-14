@@ -14,7 +14,7 @@ Set the backend API base URL in:
 
 Property:
 
-- `ApiBaseUrl` (default: `http://localhost:5000/`)
+- `ApiBaseUrl` (default: `http://localhost:5165/`)
 
 ## Run
 
