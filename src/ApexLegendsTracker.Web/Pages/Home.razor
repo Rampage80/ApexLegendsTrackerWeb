@@ -1,0 +1,75 @@
+﻿@page "/"
+
+<PageTitle>ApexLegendsTracker</PageTitle>
+
+<h1>Apex Legends Player Lookup</h1>
+
+<p>Query the backend microservice for player stats.</p>
+
+<div class="mb-3">
+	<label class="form-label" for="playerName">Player Name</label>
+	<input id="playerName" class="form-control" @bind="_playerName" />
+</div>
+
+<div class="mb-3">
+	<label class="form-label" for="platform">Platform</label>
+	<select id="platform" class="form-select" @bind="_platform">
+		<option value="PC">PC</option>
+		<option value="PS4">PS4</option>
+		<option value="X1">X1</option>
+	</select>
+</div>
+
+<button class="btn btn-primary" @onclick="LookupAsync" disabled="@_isLoading">@(_isLoading ? "Loading..." : "Lookup")</button>
+
+@if (!string.IsNullOrWhiteSpace(_error))
+{
+	<div class="alert alert-danger mt-3">@_error</div>
+}
+
+@if (_result is not null)
+{
+	<div class="card mt-3">
+		<div class="card-body">
+			<h5 class="card-title">@_result.PlayerName (@_result.Platform)</h5>
+			<pre>@_result.RawJson</pre>
+		</div>
+	</div>
+}
+
+@code {
+	[Inject]
+	private IApexTrackerApiClient ApiClient { get; set; } = default!;
+
+	private string _playerName = string.Empty;
+	private string _platform = "PC";
+	private bool _isLoading;
+	private string? _error;
+	private PlayerLookupResult? _result;
+
+	private async Task LookupAsync()
+	{
+		_error = null;
+		_result = null;
+
+		if (string.IsNullOrWhiteSpace(_playerName))
+		{
+			_error = "Please enter a player name.";
+			return;
+		}
+
+		try
+		{
+			_isLoading = true;
+			_result = await ApiClient.GetPlayerAsync(_playerName, _platform);
+		}
+		catch (Exception ex)
+		{
+			_error = ex.Message;
+		}
+		finally
+		{
+			_isLoading = false;
+		}
+	}
+}
