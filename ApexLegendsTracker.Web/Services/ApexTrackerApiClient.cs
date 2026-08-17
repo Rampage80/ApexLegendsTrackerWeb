@@ -22,8 +22,24 @@ public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 		string encodedPlayerName = Uri.EscapeDataString(playerName.Trim());
 		string path = $"api/v1/players/{encodedPlatform}/{encodedPlayerName}";
 
-		using HttpResponseMessage response = await _httpClient.GetAsync(path, cancellationToken);
-
+		HttpResponseMessage response;
+		try
+		{
+			 response = await _httpClient.GetAsync(path, cancellationToken);
+		}
+		catch(Exception ex)
+		{
+			//Specifically communication exception, log for initial debugging purposes
+			if(ex.Message == "TypeError: Failed to fetch")
+			{
+				throw new Exception("Couldn't reach API. ApiClient location attempted:" + _httpClient.BaseAddress + path);
+			}
+			else
+			{
+				throw;
+			}
+		}
+		
 		if (!response.IsSuccessStatusCode)
 		{
 			string errorBody = await response.Content.ReadAsStringAsync(cancellationToken);

@@ -1,0 +1,152 @@
+@page "/results/{Platform}/{PlayerName}"
+
+<PageTitle>Player Results</PageTitle>
+
+<div class="results-page">
+    <header class="results-header">
+        <div class="player-summary">
+            <div class="eyebrow">Player overview</div>
+            <h2>@PlayerName • @Platform</h2>
+            <p>Season 24 performance insights and rank progression</p>
+        </div>
+
+        <button class="ghost-button" @onclick="GoHome">Back to dashboard</button>
+    </header>
+
+    <section class="metrics-grid">
+        <article class="metric-card highlight">
+            <div class="metric-label">Current rank</div>
+            <div class="metric-value">Predator</div>
+            <div class="metric-sub">Season 24 • 1,420 RP</div>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-label">RP to next tier</div>
+            <div class="metric-value">310 RP</div>
+            <div class="metric-sub">To Master tier</div>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-label">K/D</div>
+            <div class="metric-value">1.41</div>
+            <div class="metric-sub">Last 50 games</div>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-label">Win rate</div>
+            <div class="metric-value">46%</div>
+            <div class="metric-sub">Across 186 matches</div>
+        </article>
+    </section>
+
+    <section class="content-grid">
+        <article class="panel">
+            <div class="panel-header">
+                <span>Key performance</span>
+                <span>Last 30 days</span>
+            </div>
+
+            <ul class="performance-list">
+                <li>
+                    <span>Top gun</span>
+                    <strong>R-301</strong>
+                </li>
+                <li>
+                    <span>Best map</span>
+                    <strong>Olympus</strong>
+                </li>
+                <li>
+                    <span>Best legend</span>
+                    <strong>Bloodhound</strong>
+                </li>
+                <li>
+                    <span>Best squad style</span>
+                    <strong>Agro / Push</strong>
+                </li>
+            </ul>
+        </article>
+
+        <article class="panel">
+            <div class="panel-header">
+                <span>RP to Predator</span>
+                <span>@Platform</span>
+            </div>
+
+            <ul class="rp-list">
+                <li>
+                    <span>Current total</span>
+                    <span class="rp-tag">1,420</span>
+                </li>
+                <li>
+                    <span>Needed to reach predator</span>
+                    <span class="rp-tag">310</span>
+                </li>
+                <li>
+                    <span>Estimated games</span>
+                    <span>8–12</span>
+                </li>
+            </ul>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <span>Performance breakdown</span>
+            <span>Weighted by K/D</span>
+        </div>
+
+        <div class="stat-grid">
+            <article class="stat-card">
+                <div class="metric-label">Top weapon</div>
+                <div class="stat-value">R-301</div>
+                <div class="stat-meta">K/D 1.62 • 42 kills</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">Best map</div>
+                <div class="stat-value">Olympus</div>
+                <div class="stat-meta">K/D 1.84 • 3 wins</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">Best legend</div>
+                <div class="stat-value">Bloodhound</div>
+                <div class="stat-meta">K/D 1.79 • 11 wins</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">Avg placement</div>
+                <div class="stat-value">3.4</div>
+                <div class="stat-meta">Top 5% in the last month</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">Damage / match</div>
+                <div class="stat-value">1,280</div>
+                <div class="stat-meta">Season average</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">Revives</div>
+                <div class="stat-value">32</div>
+                <div class="stat-meta">Support utility</div>
+            </article>
+        </div>
+    </section>
+</div>
+
+@code {
+    [Parameter]
+    public string Platform { get; set; } = "PC";
+
+    [Parameter]
+    public string PlayerName { get; set; } = string.Empty;
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

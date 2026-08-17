@@ -1,75 +1,206 @@
 ﻿@page "/"
+@inject NavigationManager Navigation
 
 <PageTitle>ApexLegendsTracker</PageTitle>
 
-<h1>Apex Legends Player Lookup</h1>
+<div class="dashboard-shell">
+    <header class="dashboard-topbar">
+        <div class="brand-block">
+            <div class="brand-mark">A</div>
+            <div>
+                <div class="eyebrow">Apex status</div>
+                <h1>ApexLegendsTracker</h1>
+            </div>
+        </div>
 
-<p>Query the backend microservice for player stats.</p>
+        <div class="top-links">
+            <span>Live Maps</span>
+            <span>Rank Feed</span>
+            <span>Server Health</span>
+        </div>
+    </header>
 
-<div class="mb-3">
-	<label class="form-label" for="playerName">Player Name</label>
-	<input id="playerName" class="form-control" @bind="_playerName" />
+    <section class="search-hero">
+        <div class="search-copy">
+            <div class="kicker">Game intelligence</div>
+            <h2>Track the meta, the map, and your climb.</h2>
+            <p>
+                Monitor current Apex status, follow the latest rotation, and see how close your squad is to predator rank.
+            </p>
+        </div>
+
+        <div class="search-panel">
+            <div class="form-field">
+                <label for="playerName">Player name</label>
+                <input id="playerName" @bind="_playerName" placeholder="Enter your gamer tag" />
+            </div>
+
+            <div class="form-field">
+                <label for="platform">Platform</label>
+                <select id="platform" @bind="_platform">
+                    <option value="PC">PC</option>
+                    <option value="PS4">PS4</option>
+                    <option value="X1">X1</option>
+                </select>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <p class="search-error">@_error</p>
+            }
+
+            <div style="display:flex; gap: 12px;">
+                <button class="search-button" style="flex: 1;" @onclick="SearchAsync" disabled="@_isLoading">
+                    @(_isLoading ? "Loading..." : "Search profile")
+                </button>
+                <button class="ghost-button" type="button">View rankings</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="metrics-grid">
+        <article class="metric-card highlight">
+            <div class="metric-label">Current map</div>
+            <div class="metric-value">World's Edge</div>
+            <div class="metric-sub">Rotation status: active • 74% avg lobby density</div>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-label">Live leaderboard</div>
+            <div class="metric-value">#12</div>
+            <div class="metric-sub">Global leaderboard snapshot</div>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-label">Server health</div>
+            <div class="metric-value">Stable</div>
+            <div class="metric-sub">Ping variance: +12ms</div>
+        </article>
+
+        <article class="metric-card">
+            <div class="metric-label">Predator target</div>
+            <div class="metric-value">410 RP</div>
+            <div class="metric-sub">PC tier • strong progression path</div>
+        </article>
+    </section>
+
+    <section class="content-grid">
+        <article class="panel">
+            <div class="panel-header">
+                <span>Map rotation</span>
+                <span>Updated 2m ago</span>
+            </div>
+
+            <ul class="map-chip-list">
+                <li class="map-chip">World's Edge</li>
+                <li class="map-chip">Olympus</li>
+                <li class="map-chip">Kings Canyon</li>
+            </ul>
+
+            <ul class="match-list">
+                <li>
+                    <span>Current queue flow</span>
+                    <span class="match-badge">High</span>
+                </li>
+                <li>
+                    <span>Peak hours</span>
+                    <span>18:30–22:00</span>
+                </li>
+                <li>
+                    <span>Match pacing</span>
+                    <span>Normal</span>
+                </li>
+            </ul>
+        </article>
+
+        <article class="panel">
+            <div class="panel-header">
+                <span>Leaderboard</span>
+                <span>Top 10</span>
+            </div>
+
+            <ul class="leaderboard-list">
+                <li>
+                    <span>1. Skarlet</span>
+                    <span class="leaderboard-rank">#1</span>
+                </li>
+                <li>
+                    <span>2. FrostByte</span>
+                    <span class="leaderboard-rank">#2</span>
+                </li>
+                <li>
+                    <span>3. Vanta</span>
+                    <span class="leaderboard-rank">#3</span>
+                </li>
+            </ul>
+        </article>
+    </section>
+
+    <section class="panel">
+        <div class="panel-header">
+            <span>Rank progression by platform</span>
+            <span>Predator thresholds</span>
+        </div>
+
+        <div class="stat-grid">
+            <article class="stat-card">
+                <div class="metric-label">PC</div>
+                <div class="stat-value">410 RP</div>
+                <div class="stat-meta">To Predator</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">PS4</div>
+                <div class="stat-value">460 RP</div>
+                <div class="stat-meta">To Predator</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">X1</div>
+                <div class="stat-value">510 RP</div>
+                <div class="stat-meta">To Predator</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">Current rank</div>
+                <div class="stat-value">Master</div>
+                <div class="stat-meta">+78 RP this week</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">K/D</div>
+                <div class="stat-value">1.28</div>
+                <div class="stat-meta">Season trend ↑ 8%</div>
+            </article>
+
+            <article class="stat-card">
+                <div class="metric-label">Win rate</div>
+                <div class="stat-value">43%</div>
+                <div class="stat-meta">Across 128 matches</div>
+            </article>
+        </div>
+    </section>
 </div>
-
-<div class="mb-3">
-	<label class="form-label" for="platform">Platform</label>
-	<select id="platform" class="form-select" @bind="_platform">
-		<option value="PC">PC</option>
-		<option value="PS4">PS4</option>
-		<option value="X1">X1</option>
-	</select>
-</div>
-
-<button class="btn btn-primary" @onclick="LookupAsync" disabled="@_isLoading">@(_isLoading ? "Loading..." : "Lookup")</button>
-
-@if (!string.IsNullOrWhiteSpace(_error))
-{
-	<div class="alert alert-danger mt-3">@_error</div>
-}
-
-@if (_result is not null)
-{
-	<div class="card mt-3">
-		<div class="card-body">
-			<h5 class="card-title">@_result.PlayerName (@_result.Platform)</h5>
-			<pre>@_result.RawJson</pre>
-		</div>
-	</div>
-}
 
 @code {
-	[Inject]
-	private IApexTrackerApiClient ApiClient { get; set; } = default!;
+    private string _playerName = string.Empty;
+    private string _platform = "PC";
+    private bool _isLoading;
+    private string? _error;
 
-	private string _playerName = string.Empty;
-	private string _platform = "PC";
-	private bool _isLoading;
-	private string? _error;
-	private PlayerLookupResult? _result;
+    private void SearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_playerName))
+        {
+            _error = "Please enter a player name.";
+            return;
+        }
 
-	private async Task LookupAsync()
-	{
-		_error = null;
-		_result = null;
+        _error = null;
+        _isLoading = true;
 
-		if (string.IsNullOrWhiteSpace(_playerName))
-		{
-			_error = "Please enter a player name.";
-			return;
-		}
-
-		try
-		{
-			_isLoading = true;
-			_result = await ApiClient.GetPlayerAsync(_playerName, _platform);
-		}
-		catch (Exception ex)
-		{
-			_error = ex.Message;
-		}
-		finally
-		{
-			_isLoading = false;
-		}
-	}
+        var encodedName = Uri.EscapeDataString(_playerName.Trim());
+        var encodedPlatform = Uri.EscapeDataString(_platform.Trim());
+        Navigation.NavigateTo($"/results/{encodedPlatform}/{encodedName}");
+    }
 }
