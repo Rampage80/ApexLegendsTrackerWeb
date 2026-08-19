@@ -10,11 +10,14 @@ Blazor WebAssembly frontend for ApexLegendsTracker.
 
 Set the backend API base URL in:
 
-- `src/ApexLegendsTracker.Web/wwwroot/appsettings.json`
+- `ApexLegendsTracker.Web/wwwroot/appsettings.json` (local development default)
+- `ApexLegendsTracker.Web/wwwroot/appsettings.Production.json` (deployed/Azure override)
 
 Property:
 
-- `ApiBaseUrl` (default: `http://localhost:5165/`)
+- `ApiBaseUrl` (local default: `http://localhost:5165/`; production: the deployed backend App Service URL)
+
+Blazor WebAssembly automatically loads `appsettings.{Environment}.json` on top of `appsettings.json` based on the app's hosting environment (`Development` locally via `dotnet run`/`ASPNETCORE_ENVIRONMENT`, `Production` when served as static files from Azure App Service). No environment variables or code changes are needed to switch the API URL between environments — just keep both JSON files in sync with the correct backend host.
 
 ## Run
 
