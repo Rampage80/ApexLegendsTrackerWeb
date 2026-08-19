@@ -11,5 +11,6 @@ string apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:516
 
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
 builder.Services.AddScoped<IApexTrackerApiClient, ApexTrackerApiClient>();
+builder.Services.AddScoped<PlayerLookupState>();
 
 await builder.Build().RunAsync();

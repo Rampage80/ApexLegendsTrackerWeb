@@ -18,4 +18,9 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ApexLegendsTracker.Web\ApexLegendsTracker.Web.csproj" />
+    <None Update="ExampleAPIJsonReturns.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

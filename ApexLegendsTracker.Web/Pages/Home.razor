@@ -1,5 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager Navigation
+@inject IApexTrackerApiClient ApiClient
+@inject PlayerLookupState LookupState
 
 <PageTitle>ApexLegendsTracker</PageTitle>
 
@@ -188,7 +190,7 @@
     private bool _isLoading;
     private string? _error;
 
-    private void SearchAsync()
+    private async Task SearchAsync()
     {
         if (string.IsNullOrWhiteSpace(_playerName))
         {
@@ -199,8 +201,24 @@
         _error = null;
         _isLoading = true;
 
-        var encodedName = Uri.EscapeDataString(_playerName.Trim());
-        var encodedPlatform = Uri.EscapeDataString(_platform.Trim());
-        Navigation.NavigateTo($"/results/{encodedPlatform}/{encodedName}");
+        string playerName = _playerName.Trim();
+        string platform = _platform.Trim();
+
+        try
+        {
+            PlayerLookupResult result = await ApiClient.GetPlayerAsync(playerName, platform);
+            result.PlayerName = playerName;
+            result.Platform = platform;
+            LookupState.Result = result;
+
+            var encodedName = Uri.EscapeDataString(playerName);
+            var encodedPlatform = Uri.EscapeDataString(platform);
+            Navigation.NavigateTo($"/results/{encodedPlatform}/{encodedName}");
+        }
+        catch (Exception exception)
+        {
+            _error = exception.Message;
+            _isLoading = false;
+        }
     }
 }

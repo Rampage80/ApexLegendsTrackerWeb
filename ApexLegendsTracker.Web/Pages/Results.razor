@@ -1,13 +1,21 @@
 @page "/results/{Platform}/{PlayerName}"
+@inject PlayerLookupState LookupState
 
 <PageTitle>Player Results</PageTitle>
+
+@if (_result is null)
+{
+    <div class="panel">No player lookup result is available.</div>
+}
+else
+{
 
 <div class="results-page">
     <header class="results-header">
         <div class="player-summary">
             <div class="eyebrow">Player overview</div>
             <h2>@PlayerName • @Platform</h2>
-            <p>Season 24 performance insights and rank progression</p>
+            <p>Level @_result.Global.Level • @_result.Realtime.CurrentStateAsText</p>
         </div>
 
         <button class="ghost-button" @onclick="GoHome">Back to dashboard</button>
@@ -16,26 +24,26 @@
     <section class="metrics-grid">
         <article class="metric-card highlight">
             <div class="metric-label">Current rank</div>
-            <div class="metric-value">Predator</div>
-            <div class="metric-sub">Season 24 • 1,420 RP</div>
+            <div class="metric-value">@_result.Global.Rank.RankName @_result.Global.Rank.RankDiv</div>
+            <div class="metric-sub">@_result.Global.Rank.RankScore RP</div>
         </article>
 
         <article class="metric-card">
             <div class="metric-label">RP to next tier</div>
-            <div class="metric-value">310 RP</div>
-            <div class="metric-sub">To Master tier</div>
+            <div class="metric-value">@_result.Realtime.SelectedLegend</div>
+            <div class="metric-sub">Selected legend</div>
         </article>
 
         <article class="metric-card">
             <div class="metric-label">K/D</div>
-            <div class="metric-value">1.41</div>
-            <div class="metric-sub">Last 50 games</div>
+            <div class="metric-value">@(_result.Realtime.IsOnline == 1 ? "Online" : "Offline")</div>
+            <div class="metric-sub">Current status</div>
         </article>
 
         <article class="metric-card">
             <div class="metric-label">Win rate</div>
-            <div class="metric-value">46%</div>
-            <div class="metric-sub">Across 186 matches</div>
+            <div class="metric-value">@_result.Legends.Selected.Data.Count</div>
+            <div class="metric-sub">Tracked legend stats</div>
         </article>
     </section>
 
@@ -48,20 +56,20 @@
 
             <ul class="performance-list">
                 <li>
-                    <span>Top gun</span>
-                    <strong>R-301</strong>
+                    <span>@GetStatName(0)</span>
+                    <strong>@GetStatValue(0)</strong>
                 </li>
                 <li>
-                    <span>Best map</span>
-                    <strong>Olympus</strong>
+                    <span>@GetStatName(1)</span>
+                    <strong>@GetStatValue(1)</strong>
                 </li>
                 <li>
-                    <span>Best legend</span>
-                    <strong>Bloodhound</strong>
+                    <span>Selected legend</span>
+                    <strong>@_result.Legends.Selected.LegendName</strong>
                 </li>
                 <li>
-                    <span>Best squad style</span>
-                    <strong>Agro / Push</strong>
+                    <span>Profile platform</span>
+                    <strong>@_result.Global.Platform</strong>
                 </li>
             </ul>
         </article>
@@ -75,15 +83,15 @@
             <ul class="rp-list">
                 <li>
                     <span>Current total</span>
-                    <span class="rp-tag">1,420</span>
+                    <span class="rp-tag">@_result.Global.Rank.RankScore</span>
                 </li>
                 <li>
                     <span>Needed to reach predator</span>
-                    <span class="rp-tag">310</span>
+                    <span class="rp-tag">Level @_result.Global.Level</span>
                 </li>
                 <li>
                     <span>Estimated games</span>
-                    <span>8–12</span>
+                    <span>@_result.Realtime.CurrentStateAsText</span>
                 </li>
             </ul>
         </article>
@@ -98,42 +106,43 @@
         <div class="stat-grid">
             <article class="stat-card">
                 <div class="metric-label">Top weapon</div>
-                <div class="stat-value">R-301</div>
-                <div class="stat-meta">K/D 1.62 • 42 kills</div>
+                <div class="stat-value">@GetStatName(0)</div>
+                <div class="stat-meta">@GetStatValue(0)</div>
             </article>
 
             <article class="stat-card">
                 <div class="metric-label">Best map</div>
-                <div class="stat-value">Olympus</div>
-                <div class="stat-meta">K/D 1.84 • 3 wins</div>
+                <div class="stat-value">@GetStatName(1)</div>
+                <div class="stat-meta">@GetStatValue(1)</div>
             </article>
 
             <article class="stat-card">
                 <div class="metric-label">Best legend</div>
-                <div class="stat-value">Bloodhound</div>
-                <div class="stat-meta">K/D 1.79 • 11 wins</div>
+                <div class="stat-value">@_result.Legends.Selected.LegendName</div>
+                <div class="stat-meta">Selected legend</div>
             </article>
 
             <article class="stat-card">
                 <div class="metric-label">Avg placement</div>
-                <div class="stat-value">3.4</div>
-                <div class="stat-meta">Top 5% in the last month</div>
+                <div class="stat-value">@_result.Global.Level</div>
+                <div class="stat-meta">Account level</div>
             </article>
 
             <article class="stat-card">
                 <div class="metric-label">Damage / match</div>
-                <div class="stat-value">1,280</div>
-                <div class="stat-meta">Season average</div>
+                <div class="stat-value">@_result.Global.Rank.RankDiv</div>
+                <div class="stat-meta">Rank division</div>
             </article>
 
             <article class="stat-card">
                 <div class="metric-label">Revives</div>
-                <div class="stat-value">32</div>
-                <div class="stat-meta">Support utility</div>
+                <div class="stat-value">@(_result.Realtime.IsOnline == 1 ? "Yes" : "No")</div>
+                <div class="stat-meta">Online now</div>
             </article>
         </div>
     </section>
 </div>
+}
 
 @code {
     [Parameter]
@@ -144,6 +153,23 @@
 
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
+
+    private PlayerLookupResult? _result;
+
+    protected override void OnInitialized()
+    {
+        _result = LookupState.Result;
+    }
+
+    private string GetStatName(int index)
+    {
+        return _result?.Legends.Selected.Data.ElementAtOrDefault(index)?.Name ?? "No stat";
+    }
+
+    private string GetStatValue(int index)
+    {
+        return _result?.Legends.Selected.Data.ElementAtOrDefault(index)?.Value.ToString("N0") ?? "-";
+    }
 
     private void GoHome()
     {

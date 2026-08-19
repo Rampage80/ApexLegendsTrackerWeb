@@ -6,6 +6,9 @@
 			"type": "blazorwasm",
 			"request": "launch",
 			"cwd": "${workspaceFolder}/ApexLegendsTracker.Web",
+			"url": "https://localhost:5001/",
+			"browser": "chrome",
+			"timeout": 60000,
 			"preLaunchTask": "build"
 		}
 	]
