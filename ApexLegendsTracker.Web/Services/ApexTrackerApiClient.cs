@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using ApexLegendsTracker.Web.Models;
+using ApexLegendsTracker.Shared;
 
 namespace ApexLegendsTracker.Web.Services;
 

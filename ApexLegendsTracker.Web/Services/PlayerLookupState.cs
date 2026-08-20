@@ -1,4 +1,4 @@
-using ApexLegendsTracker.Web.Models;
+using ApexLegendsTracker.Shared;
 
 namespace ApexLegendsTracker.Web.Services;
 
