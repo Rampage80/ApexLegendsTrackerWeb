@@ -23,6 +23,16 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Authenticate to GitHub Packages
+        run: |
+          dotnet nuget add source https://nuget.pkg.github.com/Rampage80/index.json
+            --name github-rampage80
+            --username Rampage80
+            --password $env:NUGET_AUTH_TOKEN
+            --store-password-in-clear-text
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.READONLYPACKAGEPAT }}
+      
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
