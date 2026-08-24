@@ -15,7 +15,7 @@ else
         <div class="player-summary">
             <div class="eyebrow">Player overview</div>
             <h2>@PlayerName • @Platform</h2>
-            <p>Level @_result.Global.Level • @_result.Realtime.CurrentStateAsText</p>
+            <p>Level @_result.Global.Level@(_result.Global.LevelPrestige > 0 ? $" (Prestige {_result.Global.LevelPrestige})" : "") • @_result.Realtime.CurrentStateAsText</p>
         </div>
 
         <button class="ghost-button" @onclick="GoHome">Back to dashboard</button>
@@ -29,69 +29,69 @@ else
         </article>
 
         <article class="metric-card">
-            <div class="metric-label">RP to next tier</div>
+            <div class="metric-label">Selected legend</div>
             <div class="metric-value">@_result.Realtime.SelectedLegend</div>
-            <div class="metric-sub">Selected legend</div>
+            <div class="metric-sub">Currently equipped</div>
         </article>
 
         <article class="metric-card">
-            <div class="metric-label">K/D</div>
+            <div class="metric-label">Presence</div>
             <div class="metric-value">@(_result.Realtime.IsOnline == 1 ? "Online" : "Offline")</div>
-            <div class="metric-sub">Current status</div>
+            <div class="metric-sub">@(string.IsNullOrWhiteSpace(_result.Realtime.LobbyState) ? _result.Realtime.CurrentStateAsText : _result.Realtime.LobbyState)</div>
         </article>
 
         <article class="metric-card">
-            <div class="metric-label">Win rate</div>
-            <div class="metric-value">@_result.Legends.Selected.Data.Count</div>
-            <div class="metric-sub">Tracked legend stats</div>
+            <div class="metric-label">Ban status</div>
+            <div class="metric-value">@(_result.Global.Bans.IsActive ? "Active" : "Clear")</div>
+            <div class="metric-sub">@(_result.Global.Bans.IsActive ? $"{_result.Global.Bans.RemainingSeconds}s remaining" : "No active bans")</div>
         </article>
     </section>
 
     <section class="content-grid">
         <article class="panel">
             <div class="panel-header">
-                <span>Key performance</span>
-                <span>Last 30 days</span>
+                <span>Account</span>
+                <span>@_result.Global.Platform</span>
             </div>
 
             <ul class="performance-list">
                 <li>
-                    <span>@GetStatName(0)</span>
-                    <strong>@GetStatValue(0)</strong>
+                    <span>Player tag</span>
+                    <strong>@(string.IsNullOrWhiteSpace(_result.Global.Tag) ? "—" : _result.Global.Tag)</strong>
                 </li>
                 <li>
-                    <span>@GetStatName(1)</span>
-                    <strong>@GetStatValue(1)</strong>
+                    <span>Account name</span>
+                    <strong>@_result.Global.Name</strong>
                 </li>
                 <li>
-                    <span>Selected legend</span>
-                    <strong>@_result.Legends.Selected.LegendName</strong>
+                    <span>Level</span>
+                    <strong>@_result.Global.Level</strong>
                 </li>
                 <li>
-                    <span>Profile platform</span>
-                    <strong>@_result.Global.Platform</strong>
+                    <span>Progress to next level</span>
+                    <strong>@(_result.Global.ToNextLevelPercent)%</strong>
                 </li>
             </ul>
         </article>
 
         <article class="panel">
             <div class="panel-header">
-                <span>RP to Predator</span>
+                <span>Arena rank</span>
                 <span>@Platform</span>
             </div>
 
             <ul class="rp-list">
                 <li>
-                    <span>Current total</span>
-                    <span class="rp-tag">@_result.Global.Rank.RankScore</span>
+                    <span>Rank</span>
+                    <span class="rp-tag">@_result.Global.Arena.RankName @_result.Global.Arena.RankDiv</span>
                 </li>
                 <li>
-                    <span>Needed to reach predator</span>
-                    <span class="rp-tag">Level @_result.Global.Level</span>
+                    <span>RP</span>
+                    <span class="rp-tag">@_result.Global.Arena.RankScore</span>
                 </li>
                 <li>
-                    <span>Estimated games</span>
-                    <span>@_result.Realtime.CurrentStateAsText</span>
+                    <span>Ranked season</span>
+                    <span>@(string.IsNullOrWhiteSpace(_result.Global.Arena.RankedSeason) ? "—" : _result.Global.Arena.RankedSeason)</span>
                 </li>
             </ul>
         </article>
@@ -99,48 +99,47 @@ else
 
     <section class="panel">
         <div class="panel-header">
-            <span>Performance breakdown</span>
-            <span>Weighted by K/D</span>
+            <span>Selected legend stats</span>
+            <span>@_result.Legends.Selected.LegendName</span>
         </div>
 
-        <div class="stat-grid">
-            <article class="stat-card">
-                <div class="metric-label">Top weapon</div>
-                <div class="stat-value">@GetStatName(0)</div>
-                <div class="stat-meta">@GetStatValue(0)</div>
-            </article>
-
-            <article class="stat-card">
-                <div class="metric-label">Best map</div>
-                <div class="stat-value">@GetStatName(1)</div>
-                <div class="stat-meta">@GetStatValue(1)</div>
-            </article>
-
-            <article class="stat-card">
-                <div class="metric-label">Best legend</div>
-                <div class="stat-value">@_result.Legends.Selected.LegendName</div>
-                <div class="stat-meta">Selected legend</div>
-            </article>
-
-            <article class="stat-card">
-                <div class="metric-label">Avg placement</div>
-                <div class="stat-value">@_result.Global.Level</div>
-                <div class="stat-meta">Account level</div>
-            </article>
-
-            <article class="stat-card">
-                <div class="metric-label">Damage / match</div>
-                <div class="stat-value">@_result.Global.Rank.RankDiv</div>
-                <div class="stat-meta">Rank division</div>
-            </article>
-
-            <article class="stat-card">
-                <div class="metric-label">Revives</div>
-                <div class="stat-value">@(_result.Realtime.IsOnline == 1 ? "Yes" : "No")</div>
-                <div class="stat-meta">Online now</div>
-            </article>
-        </div>
+        @if (_result.Legends.Selected.Data.Count == 0)
+        {
+            <p class="empty-state">No career stats reported for this legend yet.</p>
+        }
+        else
+        {
+            <div class="stat-grid">
+                @foreach (LegendStat stat in _result.Legends.Selected.Data)
+                {
+                    <article class="stat-card">
+                        <div class="metric-label">@stat.Name</div>
+                        <div class="stat-value">@stat.Value.ToString("N0")</div>
+                    </article>
+                }
+            </div>
+        }
     </section>
+
+    @if (_result.Global.Badges.Count > 0)
+    {
+        <section class="panel">
+            <div class="panel-header">
+                <span>Badges</span>
+                <span>Account</span>
+            </div>
+
+            <ul class="performance-list">
+                @foreach (PlayerBadge badge in _result.Global.Badges.Take(6))
+                {
+                    <li>
+                        <span>@badge.Name</span>
+                        <strong>@badge.Value</strong>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
 </div>
 }
 
@@ -159,16 +158,6 @@ else
     protected override void OnInitialized()
     {
         _result = LookupState.Result;
-    }
-
-    private string GetStatName(int index)
-    {
-        return _result?.Legends.Selected.Data.ElementAtOrDefault(index)?.Name ?? "No stat";
-    }
-
-    private string GetStatValue(int index)
-    {
-        return _result?.Legends.Selected.Data.ElementAtOrDefault(index)?.Value.ToString("N0") ?? "-";
     }
 
     private void GoHome()
