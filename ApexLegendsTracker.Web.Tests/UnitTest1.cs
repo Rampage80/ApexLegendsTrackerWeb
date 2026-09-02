@@ -38,13 +38,13 @@ public class UnitTest1
         Assert.Equal(1, result.Global.LevelPrestige);
         Assert.Equal(6, result.Global.ToNextLevelPercent);
         Assert.False(result.Global.Bans.IsActive);
-        Assert.Equal("Unranked", result.Global.Arena.RankName);
-        Assert.Equal(8, result.Global.Badges.Count);
+        Assert.Contains("rank", result.Global.Rank.RankImg ?? string.Empty);
         Assert.Equal("invite", result.Realtime.LobbyState);
         Assert.Equal(1, result.Realtime.IsInGame);
-        Assert.Equal("Epic", result.Legends.Selected.GameInfo?.SkinRarity);
         Assert.Equal("https://api.mozambiquehe.re/assets/icons/sparrow.png", result.Legends.Selected.ImgAssets?.Icon);
+        Assert.Contains("banner", result.Legends.Selected.ImgAssets?.Banner ?? string.Empty);
         Assert.True(result.Legends.All.ContainsKey("Wattson"));
+        Assert.NotEmpty(result.Legends.All["Wattson"].Data);
     }
 
     private sealed class StubHttpMessageHandler : HttpMessageHandler

@@ -11,96 +11,69 @@ else
 {
 
 <div class="results-page">
-    <header class="results-header">
-        <div class="player-summary">
-            <div class="eyebrow">Player overview</div>
-            <h2>@PlayerName • @Platform</h2>
-            <p>Level @_result.Global.Level@(_result.Global.LevelPrestige > 0 ? $" (Prestige {_result.Global.LevelPrestige})" : "") • @_result.Realtime.CurrentStateAsText</p>
+    <section class="results-hero">
+        @if (!string.IsNullOrWhiteSpace(_result.Legends.Selected.ImgAssets?.Banner))
+        {
+            <img class="legend-banner" src="@_result.Legends.Selected.ImgAssets.Banner" alt="" />
+        }
+        <div class="results-hero-overlay">
+            <header class="results-header">
+                <div class="player-summary">
+                    <div class="eyebrow">Player overview</div>
+                    <h2>(@_result.Global.Tag) @PlayerName • @Platform</h2>
+                    <p>Level @_result.Global.Level (@_result.Global.ToNextLevelPercent% to next level) • @_result.Realtime.CurrentStateAsText</p>
+                </div>
+
+                <button class="ghost-button" @onclick="GoHome">Back to dashboard</button>
+            </header>
+
+            <div class="player-status-summary">
+                <div class="status-item">
+                    <span class="metric-label">Presence</span>
+                    <strong>@(_result.Realtime.IsOnline == 1 ? "Online" : "Offline")</strong>
+                </div>
+                <div class="status-item">
+                    <span class="metric-label">Ban status</span>
+                    <strong>@(_result.Global.Bans.IsActive ? "Active" : "Clear")</strong>
+                </div>
+            </div>
         </div>
-
-        <button class="ghost-button" @onclick="GoHome">Back to dashboard</button>
-    </header>
-
-    <section class="metrics-grid">
-        <article class="metric-card highlight">
-            <div class="metric-label">Current rank</div>
-            <div class="metric-value">@_result.Global.Rank.RankName @_result.Global.Rank.RankDiv</div>
-            <div class="metric-sub">@_result.Global.Rank.RankScore RP</div>
-        </article>
-
-        <article class="metric-card">
-            <div class="metric-label">Selected legend</div>
-            <div class="metric-value">@_result.Realtime.SelectedLegend</div>
-            <div class="metric-sub">Currently equipped</div>
-        </article>
-
-        <article class="metric-card">
-            <div class="metric-label">Presence</div>
-            <div class="metric-value">@(_result.Realtime.IsOnline == 1 ? "Online" : "Offline")</div>
-            <div class="metric-sub">@(string.IsNullOrWhiteSpace(_result.Realtime.LobbyState) ? _result.Realtime.CurrentStateAsText : _result.Realtime.LobbyState)</div>
-        </article>
-
-        <article class="metric-card">
-            <div class="metric-label">Ban status</div>
-            <div class="metric-value">@(_result.Global.Bans.IsActive ? "Active" : "Clear")</div>
-            <div class="metric-sub">@(_result.Global.Bans.IsActive ? $"{_result.Global.Bans.RemainingSeconds}s remaining" : "No active bans")</div>
-        </article>
     </section>
 
-    <section class="content-grid">
-        <article class="panel">
-            <div class="panel-header">
-                <span>Account</span>
-                <span>@_result.Global.Platform</span>
+    <section class="panel rank-section">
+        <div class="panel-header">
+            <span>Ranking</span>
+            <span>Current season</span>
+        </div>
+
+        <div class="rank-summary">
+            <div class="metric-card-content">
+                <div class="metric-label">Rank</div>
+                <div class="metric-value">@_result.Global.Rank.RankName @_result.Global.Rank.RankDiv</div>
+                <div class="metric-sub">@_result.Global.Rank.RankScore RP</div>
             </div>
-
-            <ul class="performance-list">
-                <li>
-                    <span>Player tag</span>
-                    <strong>@(string.IsNullOrWhiteSpace(_result.Global.Tag) ? "—" : _result.Global.Tag)</strong>
-                </li>
-                <li>
-                    <span>Account name</span>
-                    <strong>@_result.Global.Name</strong>
-                </li>
-                <li>
-                    <span>Level</span>
-                    <strong>@_result.Global.Level</strong>
-                </li>
-                <li>
-                    <span>Progress to next level</span>
-                    <strong>@(_result.Global.ToNextLevelPercent)%</strong>
-                </li>
-            </ul>
-        </article>
-
-        <article class="panel">
-            <div class="panel-header">
-                <span>Arena rank</span>
-                <span>@Platform</span>
-            </div>
-
-            <ul class="rp-list">
-                <li>
-                    <span>Rank</span>
-                    <span class="rp-tag">@_result.Global.Arena.RankName @_result.Global.Arena.RankDiv</span>
-                </li>
-                <li>
-                    <span>RP</span>
-                    <span class="rp-tag">@_result.Global.Arena.RankScore</span>
-                </li>
-                <li>
-                    <span>Ranked season</span>
-                    <span>@(string.IsNullOrWhiteSpace(_result.Global.Arena.RankedSeason) ? "—" : _result.Global.Arena.RankedSeason)</span>
-                </li>
-            </ul>
-        </article>
+            @if (!string.IsNullOrWhiteSpace(_result.Global.Rank.RankImg))
+            {
+                <img class="rank-image" src="@_result.Global.Rank.RankImg" alt="@_result.Global.Rank.RankName rank" />
+            }
+        </div>
     </section>
 
     <section class="panel">
         <div class="panel-header">
-            <span>Selected legend stats</span>
-            <span>@_result.Legends.Selected.LegendName</span>
+            <span>Selected legend</span>
+            <span>Currently equipped</span>
+        </div>
+
+        <div class="selected-legend-summary">
+            @if (!string.IsNullOrWhiteSpace(_result.Legends.Selected.ImgAssets?.Icon))
+            {
+                <img class="legend-icon" src="@_result.Legends.Selected.ImgAssets.Icon" alt="" />
+            }
+            <div>
+                <div class="metric-label">Legend stats</div>
+                <div class="metric-value">@_result.Legends.Selected.LegendName</div>
+            </div>
         </div>
 
         @if (_result.Legends.Selected.Data.Count == 0)
@@ -121,23 +94,42 @@ else
         }
     </section>
 
-    @if (_result.Global.Badges.Count > 0)
+    @if (_result.Legends.All.Count > 0)
     {
+        var characters = _result.Legends.All
+            .Where(character => !string.Equals(character.Key, "Global", StringComparison.OrdinalIgnoreCase));
+
         <section class="panel">
             <div class="panel-header">
-                <span>Badges</span>
-                <span>Account</span>
+                <span>Characters</span>
+                <span>@characters.Count() tracked</span>
             </div>
 
-            <ul class="performance-list">
-                @foreach (PlayerBadge badge in _result.Global.Badges.Take(6))
+            <div class="character-grid">
+                @foreach (KeyValuePair<string, LegendBreakdown> character in characters)
                 {
-                    <li>
-                        <span>@badge.Name</span>
-                        <strong>@badge.Value</strong>
-                    </li>
+                    <article class="character-card">
+                        @if (!string.IsNullOrWhiteSpace(character.Value.ImgAssets?.Icon))
+                        {
+                            <img class="character-icon" src="@character.Value.ImgAssets.Icon" alt="" />
+                        }
+                        <div class="character-name">@character.Key</div>
+                        @if (character.Value.Data.Count == 0)
+                        {
+                            <div class="empty-state">No stats reported</div>
+                        }
+                        else
+                        {
+                            <ul class="character-stats">
+                                @foreach (LegendStat stat in character.Value.Data)
+                                {
+                                    <li><span>@stat.Name</span><strong>@stat.Value.ToString("N0")</strong></li>
+                                }
+                            </ul>
+                        }
+                    </article>
                 }
-            </ul>
+            </div>
         </section>
     }
 </div>
