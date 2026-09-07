@@ -260,7 +260,7 @@ button, input, select {
 }
 
 .content-grid {
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .results-hero,
@@ -504,6 +504,129 @@ button, input, select {
     text-align: center;
 }
 
+.rotation-list {
+    display: grid;
+    gap: 16px;
+}
+
+.rotation-item {
+    display: flex;
+    height: 166px;
+    align-items: stretch;
+    background-color: rgba(10, 24, 39, 0.9);
+    background-position: center;
+    background-size: cover;
+    overflow: hidden;
+    padding: 0;
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    border-radius: 12px;
+    position: relative;
+}
+
+.rotation-overlay {
+    display: flex;
+    width: 100%;
+    align-items: flex-end;
+    background: linear-gradient(90deg, rgba(7, 17, 31, 0.94), rgba(7, 17, 31, 0.45) 65%, rgba(7, 17, 31, 0.7));
+}
+
+.rotation-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    padding: 18px 20px;
+}
+
+.rotation-next {
+    color: var(--muted);
+    font-size: 0.86rem;
+    text-align: right;
+}
+
+.predator-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.predator-showcase {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    height: 166px;
+    padding: 18px 28px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 155, 66, 0.42);
+    border-radius: 16px;
+    background:
+        linear-gradient(105deg, rgba(255, 93, 93, 0.34), rgba(255, 155, 66, 0.12) 52%, rgba(10, 24, 39, 0.9)),
+        radial-gradient(circle at 85% 50%, rgba(255, 200, 87, 0.32), transparent 42%);
+    box-shadow: 0 12px 30px rgba(255, 93, 93, 0.16);
+}
+
+.predator-showcase img {
+    width: 132px;
+    height: 132px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 16px rgba(255, 200, 87, 0.52));
+}
+
+.predator-kicker {
+    color: var(--warning);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.predator-grid .stat-card {
+    height: 166px;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 18px 24px;
+    background: linear-gradient(145deg, rgba(255, 93, 93, 0.16), rgba(255, 155, 66, 0.08) 52%, rgba(10, 24, 39, 0.92));
+    border-color: rgba(255, 155, 66, 0.28);
+}
+
+.predator-grid .metric-label {
+    color: var(--warning);
+}
+
+.predator-platform {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.predator-platform img {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    opacity: 0.92;
+}
+
+.predator-rp {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--ink);
+}
+
+.predator-rp span {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.predator-rp small {
+    color: var(--warning);
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
 .leaderboard-list li,
 .server-list li,
 .rp-list li,
@@ -664,6 +787,10 @@ button, input, select {
     .stat-grid {
         grid-template-columns: repeat(3, minmax(160px, 1fr));
     }
+
+    .predator-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 640px) {
@@ -690,6 +817,15 @@ button, input, select {
 
     .status-item {
         min-width: 0;
+    }
+
+    .rotation-details {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .rotation-next {
+        text-align: left;
     }
 
     .top-links {

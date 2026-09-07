@@ -58,4 +58,34 @@ public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 
 		return payload;
 	}
+
+	public Task<MapRotationResponse> GetMapRotationAsync(
+		int version = 1,
+		CancellationToken cancellationToken = default)
+	{
+		return GetAsync<MapRotationResponse>($"api/v1/map-rotation?version={version}", cancellationToken);
+	}
+
+	public Task<PredatorResponse> GetPredatorThresholdsAsync(CancellationToken cancellationToken = default)
+	{
+		return GetAsync<PredatorResponse>("api/v1/predator-thresholds", cancellationToken);
+	}
+
+	private async Task<TResponse> GetAsync<TResponse>(string path, CancellationToken cancellationToken)
+		where TResponse : class
+	{
+		using HttpResponseMessage response = await _httpClient.GetAsync(path, cancellationToken);
+
+		if (!response.IsSuccessStatusCode)
+		{
+			string errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+			throw new HttpRequestException(
+				$"Backend request failed with status {(int)response.StatusCode}. Body: {errorBody}",
+				null,
+				response.StatusCode);
+		}
+
+		TResponse? payload = await response.Content.ReadFromJsonAsync<TResponse>(cancellationToken: cancellationToken);
+		return payload ?? throw new HttpRequestException("Backend returned an empty response body.");
+	}
 }

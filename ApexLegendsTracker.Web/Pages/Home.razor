@@ -15,19 +15,14 @@
             </div>
         </div>
 
-        <div class="top-links">
-            <span>Live Maps</span>
-            <span>Rank Feed</span>
-            <span>Server Health</span>
-        </div>
     </header>
 
     <section class="search-hero">
         <div class="search-copy">
-            <div class="kicker">Game intelligence</div>
-            <h2>Track the meta, the map, and your climb.</h2>
+            <div class="kicker">Live Apex status</div>
+            <h2>Check the current map and Predator thresholds.</h2>
             <p>
-                Monitor current Apex status, follow the latest rotation, and see how close your squad is to predator rank.
+                Search a player profile or review the latest status from the live Apex endpoints.
             </p>
         </div>
 
@@ -60,128 +55,73 @@
         </div>
     </section>
 
-    <section class="metrics-grid">
-        <article class="metric-card highlight">
-            <div class="metric-label">Current map <span class="preview-badge">Preview</span></div>
-            <div class="metric-value">World's Edge</div>
-            <div class="metric-sub">Rotation status: active • 74% avg lobby density</div>
-        </article>
+    @if (_isLoadingStatus)
+    {
+        <section class="panel"><p class="empty-state">Loading live status...</p></section>
+    }
+    else if (!string.IsNullOrWhiteSpace(_statusError))
+    {
+        <section class="panel"><p class="search-error">@_statusError</p></section>
+    }
+    else
+    {
+        <section class="content-grid">
+            <article class="panel">
+                <div class="panel-header">
+                    <span>Map rotation</span>
+                    <span>Live</span>
+                </div>
 
-        <article class="metric-card">
-            <div class="metric-label">Live leaderboard <span class="preview-badge">Preview</span></div>
-            <div class="metric-value">#12</div>
-            <div class="metric-sub">Global leaderboard snapshot</div>
-        </article>
-
-        <article class="metric-card">
-            <div class="metric-label">Server health <span class="preview-badge">Preview</span></div>
-            <div class="metric-value">Stable</div>
-            <div class="metric-sub">Ping variance: +12ms</div>
-        </article>
-
-        <article class="metric-card">
-            <div class="metric-label">Predator target <span class="preview-badge">Preview</span></div>
-            <div class="metric-value">410 RP</div>
-            <div class="metric-sub">PC tier • strong progression path</div>
-        </article>
-    </section>
-
-    <section class="content-grid">
-        <article class="panel">
-            <div class="panel-header">
-                <span>Map rotation</span>
-                <span class="preview-badge">Preview data</span>
-            </div>
-
-            <ul class="map-chip-list">
-                <li class="map-chip">World's Edge</li>
-                <li class="map-chip">Olympus</li>
-                <li class="map-chip">Kings Canyon</li>
-            </ul>
-
-            <ul class="match-list">
-                <li>
-                    <span>Current queue flow</span>
-                    <span class="match-badge">High</span>
-                </li>
-                <li>
-                    <span>Peak hours</span>
-                    <span>18:30–22:00</span>
-                </li>
-                <li>
-                    <span>Match pacing</span>
-                    <span>Normal</span>
-                </li>
-            </ul>
-        </article>
-
-        <article class="panel">
-            <div class="panel-header">
-                <span>Leaderboard</span>
-                <span class="preview-badge">Preview data</span>
-            </div>
-
-            <ul class="leaderboard-list">
-                <li>
-                    <span>1. Skarlet</span>
-                    <span class="leaderboard-rank">#1</span>
-                </li>
-                <li>
-                    <span>2. FrostByte</span>
-                    <span class="leaderboard-rank">#2</span>
-                </li>
-                <li>
-                    <span>3. Vanta</span>
-                    <span class="leaderboard-rank">#3</span>
-                </li>
-            </ul>
-        </article>
-    </section>
-
-    <section class="panel">
-        <div class="panel-header">
-            <span>Rank progression by platform</span>
-            <span class="preview-badge">Preview data</span>
-        </div>
-
-        <div class="stat-grid">
-            <article class="stat-card">
-                <div class="metric-label">PC</div>
-                <div class="stat-value">410 RP</div>
-                <div class="stat-meta">To Predator</div>
+                <div class="rotation-list">
+                    @foreach (MapRotationDisplay rotation in MapRotations)
+                    {
+                        <div class="rotation-item" style="@GetRotationBackgroundStyle(rotation.Current?.Asset)">
+                            <div class="rotation-overlay">
+                              <div class="rotation-details">
+                                <div>
+                                    <div class="metric-label">@rotation.DisplayMode</div>
+                                    <strong>@(rotation.Current?.Map ?? "Unavailable")</strong>
+                                </div>
+                                <div class="rotation-next">Next: @(rotation.Next?.Map ?? "Unavailable")</div>
+                              </div>
+                            </div>
+                        </div>
+                    }
+                </div>
             </article>
 
-            <article class="stat-card">
-                <div class="metric-label">PS4</div>
-                <div class="stat-value">460 RP</div>
-                <div class="stat-meta">To Predator</div>
-            </article>
+            <article class="panel">
+                <div class="panel-header">
+                    <span>Predator thresholds</span>
+                    <span>Live RP</span>
+                </div>
 
-            <article class="stat-card">
-                <div class="metric-label">X1</div>
-                <div class="stat-value">510 RP</div>
-                <div class="stat-meta">To Predator</div>
-            </article>
+                <div class="predator-showcase">
+                    <img src="https://api.mozambiquehe.re/assets/ranks/apexpredator1.png" alt="Apex Predator rank" />
+                    <div>
+                        <div class="predator-kicker">Apex Predator</div>
+                        <strong>Climb to the top</strong>
+                    </div>
+                </div>
 
-            <article class="stat-card">
-                <div class="metric-label">Current rank</div>
-                <div class="stat-value">Master</div>
-                <div class="stat-meta">+78 RP this week</div>
+                <div class="stat-grid predator-grid">
+                    @foreach (PredatorDisplay threshold in PredatorThresholds)
+                    {
+                        <article class="stat-card">
+                            <div class="predator-platform">
+                                <img src="@threshold.IconUrl" alt="@threshold.Platform" />
+                                <span class="metric-label">@threshold.Platform</span>
+                            </div>
+                            <div class="predator-rp">
+                                <span>@threshold.Rp</span>
+                                <small>RP</small>
+                            </div>
+                        </article>
+                    }
+                </div>
             </article>
-
-            <article class="stat-card">
-                <div class="metric-label">K/D</div>
-                <div class="stat-value">1.28</div>
-                <div class="stat-meta">Season trend ↑ 8%</div>
-            </article>
-
-            <article class="stat-card">
-                <div class="metric-label">Win rate</div>
-                <div class="stat-value">43%</div>
-                <div class="stat-meta">Across 128 matches</div>
-            </article>
-        </div>
-    </section>
+        </section>
+    }
 </div>
 
 @code {
@@ -189,6 +129,63 @@
     private string _platform = "PC";
     private bool _isLoading;
     private string? _error;
+    private bool _isLoadingStatus = true;
+    private string? _statusError;
+    private MapRotationResponse? _mapRotation;
+    private PredatorResponse? _predatorResponse;
+
+    private IEnumerable<MapRotationDisplay> MapRotations => new MapRotationDisplay[]
+    {
+        new("Battle Royale", _mapRotation?.BattleRoyale?.Current, _mapRotation?.BattleRoyale?.Next),
+        new("Ranked", _mapRotation?.Ranked?.Current, _mapRotation?.Ranked?.Next),
+        new("LTM", _mapRotation?.Ltm?.Current, _mapRotation?.Ltm?.Next),
+        new("Wildcard", _mapRotation?.Wildcard?.Current, _mapRotation?.Wildcard?.Next)
+    };
+
+    private IEnumerable<PredatorDisplay> PredatorThresholds =>
+    new PredatorDisplay?[]
+    {
+        ToPredatorDisplay("PC", "https://cdn.simpleicons.org/steam/FFFFFF", _predatorResponse?.RP?.PC),
+        ToPredatorDisplay("PlayStation", "https://cdn.simpleicons.org/playstation/FFFFFF", _predatorResponse?.RP?.PS4),
+        ToPredatorDisplay("Xbox", "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/xbox.svg", _predatorResponse?.RP?.X1)
+    }.OfType<PredatorDisplay>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Task<MapRotationResponse> mapTask = ApiClient.GetMapRotationAsync();
+            Task<PredatorResponse> predatorTask = ApiClient.GetPredatorThresholdsAsync();
+            await Task.WhenAll(mapTask, predatorTask);
+            _mapRotation = await mapTask;
+            _predatorResponse = await predatorTask;
+        }
+        catch (Exception exception)
+        {
+            _statusError = $"Unable to load live status: {exception.Message}";
+        }
+        finally
+        {
+            _isLoadingStatus = false;
+        }
+    }
+
+    private static PredatorDisplay? ToPredatorDisplay(string platform, string iconUrl, PredatorThreshold? threshold) =>
+        threshold is null ? null : new(platform, iconUrl, threshold.Val);
+
+    private static string GetRotationBackgroundStyle(string? asset) =>
+        string.IsNullOrWhiteSpace(asset)
+            ? string.Empty
+            : $"background-image: url('{asset}');";
+
+    private sealed record MapRotationDisplay(string Mode, MapRotationEntry? Current, MapRotationEntry? Next)
+    {
+        public string DisplayMode => Mode == "LTM" && !string.IsNullOrWhiteSpace(Current?.EventName)
+            ? Current.EventName
+            : Mode;
+    }
+
+    private sealed record PredatorDisplay(string Platform, string IconUrl, int Rp);
 
     private async Task SearchAsync()
     {
