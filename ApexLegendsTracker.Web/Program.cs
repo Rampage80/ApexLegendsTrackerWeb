@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 using ApexLegendsTracker.Web;
 using ApexLegendsTracker.Web.Services;
 
@@ -13,4 +14,15 @@ builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(apiBaseUr
 builder.Services.AddScoped<IApexTrackerApiClient, ApexTrackerApiClient>();
 builder.Services.AddScoped<PlayerLookupState>();
 
-await builder.Build().RunAsync();
+WebAssemblyHost host = builder.Build();
+
+string? appInsightsConnectionString = host.Configuration["APEXWEB_APPINSIGHTS_CONNECTION_STRING"]
+	?? Environment.GetEnvironmentVariable("APEXWEB_APPINSIGHTS_CONNECTION_STRING");
+
+if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
+{
+	IJSRuntime jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
+	await jsRuntime.InvokeVoidAsync("apexTelemetry.init", appInsightsConnectionString);
+}
+
+await host.RunAsync();

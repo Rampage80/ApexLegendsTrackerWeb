@@ -1,16 +1,20 @@
 using System.Net;
 using System.Net.Http.Json;
 using ApexLegendsTracker.Shared;
+using ApexLegendsTracker.Shared.Telemetry;
+using Microsoft.JSInterop;
 
 namespace ApexLegendsTracker.Web.Services;
 
 public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 {
 	private readonly HttpClient _httpClient;
+	private readonly IJSRuntime _jsRuntime;
 
-	public ApexTrackerApiClient(HttpClient httpClient)
+	public ApexTrackerApiClient(HttpClient httpClient, IJSRuntime jsRuntime)
 	{
 		_httpClient = httpClient;
+		_jsRuntime = jsRuntime;
 	}
 
 	public async Task<PlayerLookupResult> GetPlayerAsync(
@@ -22,6 +26,8 @@ public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 		string encodedPlayerName = Uri.EscapeDataString(playerName.Trim());
 		string path = $"api/v1/players/{encodedPlatform}/{encodedPlayerName}";
 
+		await TrackEventAsync(TelemetryEvents.PlayerLookupRequested, platform);
+
 		HttpResponseMessage response;
 		try
 		{
@@ -32,10 +38,12 @@ public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 			//Specifically communication exception, log for initial debugging purposes
 			if(ex.Message == "TypeError: Failed to fetch")
 			{
+				await TrackEventAsync(TelemetryEvents.PlayerLookupFailed, platform, ex.Message);
 				throw new Exception("Couldn't reach API. ApiClient location attempted:" + _httpClient.BaseAddress + path);
 			}
 			else
 			{
+				await TrackEventAsync(TelemetryEvents.PlayerLookupFailed, platform, ex.Message);
 				throw;
 			}
 		}
@@ -43,6 +51,7 @@ public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 		if (!response.IsSuccessStatusCode)
 		{
 			string errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+			await TrackEventAsync(TelemetryEvents.PlayerLookupFailed, platform, $"HTTP {(int)response.StatusCode}");
 			throw new HttpRequestException(
 				$"Backend request failed with status {(int)response.StatusCode}. Body: {errorBody}",
 				null,
@@ -53,10 +62,31 @@ public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 
 		if (payload is null)
 		{
+			await TrackEventAsync(TelemetryEvents.PlayerLookupFailed, platform, "Empty response body");
 			throw new HttpRequestException("Backend returned an empty response body.", null, HttpStatusCode.InternalServerError);
 		}
 
+		await TrackEventAsync(TelemetryEvents.PlayerLookupSucceeded, platform);
+
 		return payload;
+	}
+
+	private async Task TrackEventAsync(string eventName, string platform, string? errorMessage = null)
+	{
+		var properties = new Dictionary<string, string> { [TelemetryProperties.Platform] = platform };
+		if (errorMessage is not null)
+		{
+			properties[TelemetryProperties.ErrorMessage] = errorMessage;
+		}
+
+		try
+		{
+			await _jsRuntime.InvokeVoidAsync("apexTelemetry.trackEvent", eventName, properties);
+		}
+		catch (JSException)
+		{
+			// Telemetry is best-effort; ignore interop failures (e.g. SDK not loaded).
+		}
 	}
 
 	public Task<MapRotationResponse> GetMapRotationAsync(

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using ApexLegendsTracker.Web.Services;
+using Microsoft.JSInterop;
 
 namespace ApexLegendsTracker.Web.Tests;
 
@@ -15,7 +16,7 @@ public class UnitTest1
         {
             BaseAddress = new Uri("https://api.example.test/")
         };
-        var client = new ApexTrackerApiClient(httpClient);
+        var client = new ApexTrackerApiClient(httpClient, new NoOpJSRuntime());
 
         var result = await client.GetPlayerAsync("Rampage80", "ps4");
 
@@ -73,5 +74,12 @@ public class UnitTest1
             });
         }
 
+    }
+
+    private sealed class NoOpJSRuntime : IJSRuntime
+    {
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => default;
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => default;
     }
 }
