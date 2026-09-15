@@ -20,7 +20,7 @@ public sealed class ApexTrackerApiClientChatTests
 		Assert.Equal(HttpMethod.Post, handler.Method);
 		Assert.Equal("https://api.example.test/api/v1/chat", handler.RequestUri?.ToString());
 		Assert.Equal("Rotate early.", result.Reply);
-		Assert.Equal(ChatSource.Knowledge, result.Source);
+		Assert.Equal(ChatSource.AIChat, result.Source);
 	}
 
 	[Fact]

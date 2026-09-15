@@ -20,6 +20,6 @@ This is the Web repository's concise reference for AI-assisted API changes. The 
 - The dashboard requests both live status endpoints when loaded; the backend shares their responses through a one-minute cache across API instances.
 - Local API URL is configured in `wwwroot/appsettings.json`; production uses `wwwroot/appsettings.Production.json`.
 - The home page includes a `ChatPanel` component (`Shared/ChatPanel.razor`) that posts `ApexLegendsTracker.Shared.ChatRequest` (`Message` only) to `POST /api/v1/chat` and renders the `ChatResponse.Reply`. `ChatSource` currently only has a `Knowledge` value; there is no player-specific chat path yet (deferred future work, tracked in the shared repo's chat agent plan).
-- The client deserializes `ChatResponse` with `PropertyNameCaseInsensitive` and a `JsonStringEnumConverter` since the backend serializes `ChatSource` as a string (e.g. `"Knowledge"`).
+- The client deserializes `ChatResponse` with `PropertyNameCaseInsensitive` and a `JsonStringEnumConverter` since the backend serializes `ChatSource` as a string (e.g. `"AIChat"`).
 - Chat telemetry events (`ChatRequested`/`ChatSucceeded`/`ChatFailed`) never include the raw message text, matching the existing telemetry privacy convention.
 
