@@ -115,16 +115,16 @@ public sealed class ApexTrackerApiClient : IApexTrackerApiClient
 		}
 	}
 
-	public Task<MapRotationResponse> GetMapRotationAsync(
+	public Task<MapRotationResult> GetMapRotationAsync(
 		int version = 1,
 		CancellationToken cancellationToken = default)
 	{
-		return GetAsync<MapRotationResponse>($"api/v1/map-rotation?version={version}", cancellationToken);
+		return GetAsync<MapRotationResult>($"api/v1/map-rotation?version={version}", cancellationToken);
 	}
 
-	public Task<PredatorResponse> GetPredatorThresholdsAsync(CancellationToken cancellationToken = default)
+	public Task<PredatorResult> GetPredatorThresholdsAsync(CancellationToken cancellationToken = default)
 	{
-		return GetAsync<PredatorResponse>("api/v1/predator-thresholds", cancellationToken);
+		return GetAsync<PredatorResult>("api/v1/predator-thresholds", cancellationToken);
 	}
 
 	public async Task<ChatResponse> SendChatMessageAsync(ChatRequest request, CancellationToken cancellationToken = default)

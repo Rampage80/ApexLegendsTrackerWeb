@@ -135,8 +135,8 @@
     private string? _error;
     private bool _isLoadingStatus = true;
     private string? _statusError;
-    private MapRotationResponse? _mapRotation;
-    private PredatorResponse? _predatorResponse;
+    private MapRotationResult? _mapRotation;
+    private PredatorResult? _PredatorResult;
 
     private IEnumerable<MapRotationDisplay> MapRotations => new MapRotationDisplay[]
     {
@@ -149,20 +149,20 @@
     private IEnumerable<PredatorDisplay> PredatorThresholds =>
     new PredatorDisplay?[]
     {
-        ToPredatorDisplay("PC", "https://cdn.simpleicons.org/steam/FFFFFF", _predatorResponse?.RP?.PC),
-        ToPredatorDisplay("PlayStation", "https://cdn.simpleicons.org/playstation/FFFFFF", _predatorResponse?.RP?.PS4),
-        ToPredatorDisplay("Xbox", "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/xbox.svg", _predatorResponse?.RP?.X1)
+        ToPredatorDisplay("PC", "https://cdn.simpleicons.org/steam/FFFFFF", _PredatorResult?.RP?.PC),
+        ToPredatorDisplay("PlayStation", "https://cdn.simpleicons.org/playstation/FFFFFF", _PredatorResult?.RP?.PS4),
+        ToPredatorDisplay("Xbox", "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/xbox.svg", _PredatorResult?.RP?.X1)
     }.OfType<PredatorDisplay>();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Task<MapRotationResponse> mapTask = ApiClient.GetMapRotationAsync();
-            Task<PredatorResponse> predatorTask = ApiClient.GetPredatorThresholdsAsync();
+            Task<MapRotationResult> mapTask = ApiClient.GetMapRotationAsync();
+            Task<PredatorResult> predatorTask = ApiClient.GetPredatorThresholdsAsync();
             await Task.WhenAll(mapTask, predatorTask);
             _mapRotation = await mapTask;
-            _predatorResponse = await predatorTask;
+            _PredatorResult = await predatorTask;
         }
         catch (Exception exception)
         {
