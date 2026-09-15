@@ -1,0 +1,84 @@
+@inject IApexTrackerApiClient ApiClient
+
+<article class="panel chat-panel">
+    <div class="panel-header">
+        <span>Ask about Apex</span>
+        <span>Beta</span>
+    </div>
+
+    <p class="chat-hint">Ask gameplay questions about legends, weapons, ranked, and maps. Note that the advice is based on information from 2024 or earlier due to model restrictions.</p>
+
+    <div class="chat-log" role="log" aria-live="polite" aria-label="Chat messages">
+        @if (_messages.Count == 0)
+        {
+            <p class="empty-state">No messages yet. Ask a question to get started.</p>
+        }
+        else
+        {
+            @foreach (ChatMessage message in _messages)
+            {
+                <div class="chat-message chat-message--@(message.IsUser ? "user" : "assistant")">
+                    <span class="chat-message-label">@(message.IsUser ? "You" : "Apex tips")</span>
+                    <p>@message.Text</p>
+                </div>
+            }
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <p class="search-error">@_error</p>
+    }
+
+    <form class="chat-input-row" @onsubmit="SendAsync">
+        <label for="chatMessage" class="visually-hidden">Your Apex Legends question</label>
+        <input
+            id="chatMessage"
+            @bind="_draftMessage"
+            @bind:event="oninput"
+            placeholder="e.g. how do I counter a Wraith?"
+            disabled="@_isSending"
+            maxlength="500" />
+        <button type="submit" class="search-button" disabled="@(_isSending || string.IsNullOrWhiteSpace(_draftMessage))">
+            @(_isSending ? "Sending..." : "Send")
+        </button>
+    </form>
+</article>
+
+@code {
+    private readonly List<ChatMessage> _messages = [];
+    private string _draftMessage = string.Empty;
+    private bool _isSending;
+    private string? _error;
+
+    private async Task SendAsync()
+    {
+        string message = _draftMessage.Trim();
+        if (string.IsNullOrWhiteSpace(message) || _isSending)
+        {
+            return;
+        }
+
+        _error = null;
+        _isSending = true;
+        _messages.Add(new ChatMessage(message, IsUser: true));
+        _draftMessage = string.Empty;
+
+        try
+        {
+            ChatResponse response = await ApiClient.SendChatMessageAsync(new ChatRequest(message));
+            _messages.Add(new ChatMessage(response.Reply, IsUser: false));
+        }
+        catch (Exception exception)
+        {
+            _error = "Couldn't get a reply right now. Please try again.";
+            _ = exception;
+        }
+        finally
+        {
+            _isSending = false;
+        }
+    }
+
+    private sealed record ChatMessage(string Text, bool IsUser);
+}

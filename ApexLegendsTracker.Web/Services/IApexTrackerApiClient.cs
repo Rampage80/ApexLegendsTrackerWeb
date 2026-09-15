@@ -9,4 +9,6 @@ public interface IApexTrackerApiClient
 	Task<MapRotationResponse> GetMapRotationAsync(int version = 1, CancellationToken cancellationToken = default);
 
 	Task<PredatorResponse> GetPredatorThresholdsAsync(CancellationToken cancellationToken = default);
+
+	Task<ChatResponse> SendChatMessageAsync(ChatRequest request, CancellationToken cancellationToken = default);
 }
