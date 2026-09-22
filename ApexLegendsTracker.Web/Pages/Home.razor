@@ -1,225 +1,35 @@
 ﻿@page "/"
-@inject NavigationManager Navigation
-@inject IApexTrackerApiClient ApiClient
-@inject PlayerLookupState LookupState
 
 <PageTitle>ApexLegendsTracker</PageTitle>
 
 <div class="dashboard-shell">
-    <header class="dashboard-topbar">
-        <div class="brand-block">
-            <div class="brand-mark">A</div>
-            <div>
-                <div class="eyebrow">Apex status</div>
-                <h1>ApexLegendsTracker</h1>
+    <section class="home-top-grid" aria-label="Apex tracker introduction and player search">
+        <section class="home-intro" aria-labelledby="home-heading">
+            <div class="search-copy">
+                <h1 id="home-heading">Know the game before you queue.</h1>
+                <p>
+                    Look up player profiles, get current game information, and get practical answers when you need them.
+                </p>
             </div>
-        </div>
+        </section>
 
-    </header>
-
-    <section class="search-hero">
-        <div class="search-copy">
-            <div class="kicker">Live Apex status</div>
-            <h2>Check the current map and Predator thresholds.</h2>
-            <p>
-                Search a player profile or review the latest status from the live Apex endpoints.
-            </p>
-        </div>
-
-        <div class="search-panel">
-            <div class="form-field">
-                <label for="playerName">Player name</label>
-                <input id="playerName" @bind="_playerName" placeholder="Enter your gamer tag" />
+        <article class="panel home-lookup-panel" aria-labelledby="home-lookup-heading">
+            <div class="panel-header">
+                <span>Player Search</span>
+                <span>Profile search</span>
             </div>
 
-            <div class="form-field">
-                <label for="platform">Platform</label>
-                <select id="platform" @bind="_platform">
-                    <option value="PS4">PlayStation</option>
-                    <option value="PC">PC</option>
-                    <option value="X1">Xbox</option>
-                </select>
+            <div class="home-tool-copy">
+                <div class="kicker">Find your profile</div>
+                <h2 id="home-lookup-heading">See the player behind the tag.</h2>
+                <p>Search by platform to open a detailed profile with rank, level, presence, and legend stats.</p>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(_error))
-            {
-                <p class="search-error">@_error</p>
-            }
-
-            <div style="display:flex; gap: 12px;">
-                <button class="search-button" style="flex: 1;" @onclick="SearchAsync" disabled="@_isLoading">
-                    @(_isLoading ? "Loading..." : "Search profile")
-                </button>
-                <button class="ghost-button" type="button">View rankings</button>
-            </div>
-        </div>
+            <PlayerLookupForm ButtonText="Search player" FormClass="home-lookup-form" IdPrefix="home" />
+        </article>
     </section>
 
-    @if (_isLoadingStatus)
-    {
-        <section class="panel"><p class="empty-state">Loading live status...</p></section>
-    }
-    else if (!string.IsNullOrWhiteSpace(_statusError))
-    {
-        <section class="panel"><p class="search-error">@_statusError</p></section>
-    }
-    else
-    {
-        <section class="content-grid">
-            <article class="panel">
-                <div class="panel-header">
-                    <span>Map rotation</span>
-                    <span>Live</span>
-                </div>
-
-                <div class="rotation-list">
-                    @foreach (MapRotationDisplay rotation in MapRotations)
-                    {
-                        <div class="rotation-item" style="@GetRotationBackgroundStyle(rotation.Current?.Asset)">
-                            <div class="rotation-overlay">
-                              <div class="rotation-details">
-                                <div>
-                                    <div class="metric-label">@rotation.DisplayMode</div>
-                                    <strong>@(rotation.Current?.Map ?? "Unavailable")</strong>
-                                </div>
-                                <div class="rotation-next">Next: @(rotation.Next?.Map ?? "Unavailable")</div>
-                              </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </article>
-
-            <article class="panel">
-                <div class="panel-header">
-                    <span>Predator thresholds</span>
-                    <span>Live RP</span>
-                </div>
-
-                <div class="predator-showcase">
-                    <img src="https://api.mozambiquehe.re/assets/ranks/apexpredator1.png" alt="Apex Predator rank" />
-                    <div>
-                        <div class="predator-kicker">Apex Predator</div>
-                        <strong>Climb to the top</strong>
-                    </div>
-                </div>
-
-                <div class="stat-grid predator-grid">
-                    @foreach (PredatorDisplay threshold in PredatorThresholds)
-                    {
-                        <article class="stat-card">
-                            <div class="predator-platform">
-                                <img src="@threshold.IconUrl" alt="@threshold.Platform" />
-                                <span class="metric-label">@threshold.Platform</span>
-                            </div>
-                            <div class="predator-rp">
-                                <span>@threshold.Rp</span>
-                                <small>RP</small>
-                            </div>
-                        </article>
-                    }
-                </div>
-            </article>
-        </section>
-    }
-
-    <section class="content-grid">
+    <section class="home-chat-section" aria-label="Apex AI chat">
         <ChatPanel />
     </section>
 </div>
-
-@code {
-    private string _playerName = string.Empty;
-    private string _platform = "PC";
-    private bool _isLoading;
-    private string? _error;
-    private bool _isLoadingStatus = true;
-    private string? _statusError;
-    private MapRotationResult? _mapRotation;
-    private PredatorResult? _PredatorResult;
-
-    private IEnumerable<MapRotationDisplay> MapRotations => new MapRotationDisplay[]
-    {
-        new("Battle Royale", _mapRotation?.BattleRoyale?.Current, _mapRotation?.BattleRoyale?.Next),
-        new("Ranked", _mapRotation?.Ranked?.Current, _mapRotation?.Ranked?.Next),
-        new("LTM", _mapRotation?.Ltm?.Current, _mapRotation?.Ltm?.Next),
-        new("Wildcard", _mapRotation?.Wildcard?.Current, _mapRotation?.Wildcard?.Next)
-    };
-
-    private IEnumerable<PredatorDisplay> PredatorThresholds =>
-    new PredatorDisplay?[]
-    {
-        ToPredatorDisplay("PC", "https://cdn.simpleicons.org/steam/FFFFFF", _PredatorResult?.RP?.PC),
-        ToPredatorDisplay("PlayStation", "https://cdn.simpleicons.org/playstation/FFFFFF", _PredatorResult?.RP?.PS4),
-        ToPredatorDisplay("Xbox", "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/xbox.svg", _PredatorResult?.RP?.X1)
-    }.OfType<PredatorDisplay>();
-
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            Task<MapRotationResult> mapTask = ApiClient.GetMapRotationAsync();
-            Task<PredatorResult> predatorTask = ApiClient.GetPredatorThresholdsAsync();
-            await Task.WhenAll(mapTask, predatorTask);
-            _mapRotation = await mapTask;
-            _PredatorResult = await predatorTask;
-        }
-        catch (Exception exception)
-        {
-            _statusError = $"Unable to load live status: {exception.Message}";
-        }
-        finally
-        {
-            _isLoadingStatus = false;
-        }
-    }
-
-    private static PredatorDisplay? ToPredatorDisplay(string platform, string iconUrl, PredatorThreshold? threshold) =>
-        threshold is null ? null : new(platform, iconUrl, threshold.Val);
-
-    private static string GetRotationBackgroundStyle(string? asset) =>
-        string.IsNullOrWhiteSpace(asset)
-            ? string.Empty
-            : $"background-image: url('{asset}');";
-
-    private sealed record MapRotationDisplay(string Mode, MapRotationEntry? Current, MapRotationEntry? Next)
-    {
-        public string DisplayMode => Mode == "LTM" && !string.IsNullOrWhiteSpace(Current?.EventName)
-            ? Current.EventName
-            : Mode;
-    }
-
-    private sealed record PredatorDisplay(string Platform, string IconUrl, int Rp);
-
-    private async Task SearchAsync()
-    {
-        if (string.IsNullOrWhiteSpace(_playerName))
-        {
-            _error = "Please enter a player name.";
-            return;
-        }
-
-        _error = null;
-        _isLoading = true;
-
-        string playerName = _playerName.Trim();
-        string platform = _platform.Trim();
-
-        try
-        {
-            PlayerLookupResult result = await ApiClient.GetPlayerAsync(playerName, platform);
-            result.PlayerName = playerName;
-            result.Platform = platform;
-            LookupState.Result = result;
-
-            var encodedName = Uri.EscapeDataString(playerName);
-            var encodedPlatform = Uri.EscapeDataString(platform);
-            Navigation.NavigateTo($"/results/{encodedPlatform}/{encodedName}");
-        }
-        catch (Exception exception)
-        {
-            _error = exception.Message;
-            _isLoading = false;
-        }
-    }
-}

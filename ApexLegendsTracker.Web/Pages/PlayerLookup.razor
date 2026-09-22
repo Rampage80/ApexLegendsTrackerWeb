@@ -1,0 +1,23 @@
+@page "/player-lookup"
+
+<PageTitle>Player Lookup</PageTitle>
+
+<div class="dashboard-shell">
+    <header class="dashboard-topbar">
+        <div>
+            <div class="eyebrow">Player lookup</div>
+            <h1>Find a player profile</h1>
+        </div>
+        <a class="ghost-button" href="/">Back home</a>
+    </header>
+
+    <section class="search-hero" aria-labelledby="lookup-heading">
+        <div class="search-copy">
+            <div class="kicker">Player lookup</div>
+            <h2 id="lookup-heading">See the profile behind the tag.</h2>
+            <p>Choose a platform and search when you are ready. This page does not request player data until you submit the form.</p>
+        </div>
+
+        <PlayerLookupForm />
+    </section>
+</div>

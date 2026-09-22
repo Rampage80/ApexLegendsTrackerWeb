@@ -1,0 +1,110 @@
+@page "/live-status"
+@inject IApexTrackerApiClient ApiClient
+
+<PageTitle>Live Status</PageTitle>
+
+<div class="dashboard-shell">
+    <header class="dashboard-topbar">
+        <div>
+            <div class="eyebrow">Live status</div>
+            <h1>What is happening in Apex right now?</h1>
+        </div>
+        <a class="ghost-button" href="/">Back home</a>
+    </header>
+
+    @if (_isLoading)
+    {
+        <section class="panel" aria-live="polite"><p class="empty-state">Loading live status...</p></section>
+    }
+    else if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <section class="panel"><p class="search-error" role="alert">@_error</p></section>
+    }
+    else
+    {
+        <section class="content-grid">
+            <article class="panel">
+                <div class="panel-header"><span>Map rotation</span><span>Live</span></div>
+                <div class="rotation-list">
+                    @foreach (MapRotationDisplay rotation in MapRotations)
+                    {
+                        <div class="rotation-item" style="@GetRotationBackgroundStyle(rotation.Current?.Asset)">
+                            <div class="rotation-overlay"><div class="rotation-details"><div><div class="metric-label">@rotation.DisplayMode</div><strong>@(rotation.Current?.Map ?? "Unavailable")</strong></div><div class="rotation-next">Next: @(rotation.Next?.Map ?? "Unavailable")</div></div></div>
+                        </div>
+                    }
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-header"><span>Predator thresholds</span><span>Live RP</span></div>
+                <div class="predator-showcase">
+                    <img src="https://api.mozambiquehe.re/assets/ranks/apexpredator1.png" alt="Apex Predator rank" />
+                    <div><div class="predator-kicker">Apex Predator</div><strong>Climb to the top</strong></div>
+                </div>
+                <div class="stat-grid predator-grid">
+                    @foreach (PredatorDisplay threshold in PredatorThresholds)
+                    {
+                        <article class="stat-card"><div class="predator-platform"><img src="@threshold.IconUrl" alt="@threshold.Platform" /><span class="metric-label">@threshold.Platform</span></div><div class="predator-rp"><span>@threshold.Rp</span><small>RP</small></div></article>
+                    }
+                </div>
+            </article>
+        </section>
+    }
+</div>
+
+@code {
+    private bool _isLoading = true;
+    private string? _error;
+    private MapRotationResult? _mapRotation;
+    private PredatorResult? _predatorResult;
+
+    private IEnumerable<MapRotationDisplay> MapRotations =>
+    new MapRotationDisplay[]
+    {
+        new("Battle Royale", _mapRotation?.BattleRoyale?.Current, _mapRotation?.BattleRoyale?.Next),
+        new("Ranked", _mapRotation?.Ranked?.Current, _mapRotation?.Ranked?.Next),
+        new("LTM", _mapRotation?.Ltm?.Current, _mapRotation?.Ltm?.Next),
+        new("Wildcard", _mapRotation?.Wildcard?.Current, _mapRotation?.Wildcard?.Next)
+    };
+
+    private IEnumerable<PredatorDisplay> PredatorThresholds =>
+    new PredatorDisplay?[]
+    {
+        ToPredatorDisplay("PC", "https://cdn.simpleicons.org/steam/FFFFFF", _predatorResult?.RP?.PC),
+        ToPredatorDisplay("PlayStation", "https://cdn.simpleicons.org/playstation/FFFFFF", _predatorResult?.RP?.PS4),
+        ToPredatorDisplay("Xbox", "https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/xbox.svg", _predatorResult?.RP?.X1)
+    }.OfType<PredatorDisplay>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Task<MapRotationResult> mapTask = ApiClient.GetMapRotationAsync();
+            Task<PredatorResult> predatorTask = ApiClient.GetPredatorThresholdsAsync();
+            await Task.WhenAll(mapTask, predatorTask);
+            _mapRotation = await mapTask;
+            _predatorResult = await predatorTask;
+        }
+        catch (Exception exception)
+        {
+            _error = $"Unable to load live status: {exception.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private static PredatorDisplay? ToPredatorDisplay(string platform, string iconUrl, PredatorThreshold? threshold) =>
+        threshold is null ? null : new(platform, iconUrl, threshold.Val);
+
+    private static string GetRotationBackgroundStyle(string? asset) =>
+        string.IsNullOrWhiteSpace(asset) ? string.Empty : $"background-image: url('{asset}');";
+
+    private sealed record MapRotationDisplay(string Mode, MapRotationEntry? Current, MapRotationEntry? Next)
+    {
+        public string DisplayMode => Mode == "LTM" && !string.IsNullOrWhiteSpace(Current?.EventName) ? Current.EventName : Mode;
+    }
+
+    private sealed record PredatorDisplay(string Platform, string IconUrl, int Rp);
+}

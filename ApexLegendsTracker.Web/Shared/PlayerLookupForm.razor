@@ -1,0 +1,77 @@
+@inject NavigationManager Navigation
+@inject IApexTrackerApiClient ApiClient
+@inject PlayerLookupState LookupState
+
+<form class="@FormClass" @onsubmit="SearchAsync">
+    <div class="form-field">
+        <label for="@PlayerNameId">Player name</label>
+        <input id="@PlayerNameId" @bind="_playerName" placeholder="Enter your gamer tag" autocomplete="off" />
+    </div>
+
+    <div class="form-field">
+        <label for="@PlatformId">Platform</label>
+        <select id="@PlatformId" @bind="_platform">
+            <option value="PS4">PlayStation</option>
+            <option value="PC">PC</option>
+            <option value="X1">Xbox</option>
+        </select>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <p class="search-error" role="alert">@_error</p>
+    }
+
+    <button class="search-button" type="submit" disabled="@_isLoading">
+        @(_isLoading ? "Loading..." : ButtonText)
+    </button>
+</form>
+
+@code {
+    [Parameter]
+    public string ButtonText { get; set; } = "Search profile";
+
+    [Parameter]
+    public string FormClass { get; set; } = "search-panel";
+
+    [Parameter]
+    public string IdPrefix { get; set; } = "playerLookup";
+
+    private string _playerName = string.Empty;
+    private string _platform = "PC";
+    private bool _isLoading;
+    private string? _error;
+
+    private string PlayerNameId => $"{IdPrefix}PlayerName";
+
+    private string PlatformId => $"{IdPrefix}Platform";
+
+    private async Task SearchAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_playerName))
+        {
+            _error = "Please enter a player name.";
+            return;
+        }
+
+        _error = null;
+        _isLoading = true;
+        string playerName = _playerName.Trim();
+        string platform = _platform.Trim();
+
+        try
+        {
+            PlayerLookupResult result = await ApiClient.GetPlayerAsync(playerName, platform);
+            result.PlayerName = playerName;
+            result.Platform = platform;
+            LookupState.Result = result;
+
+            Navigation.NavigateTo($"/results/{Uri.EscapeDataString(platform)}/{Uri.EscapeDataString(playerName)}");
+        }
+        catch (Exception exception)
+        {
+            _error = exception.Message;
+            _isLoading = false;
+        }
+    }
+}
