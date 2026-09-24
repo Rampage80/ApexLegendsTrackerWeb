@@ -2,10 +2,10 @@
 @inject IApexTrackerApiClient ApiClient
 @inject PlayerLookupState LookupState
 
-<form class="@FormClass" @onsubmit="SearchAsync">
+<form class="@FormClass" @onsubmit="SearchAsync" aria-busy="@_isLoading">
     <div class="form-field">
         <label for="@PlayerNameId">Player name</label>
-        <input id="@PlayerNameId" @bind="_playerName" placeholder="Enter your gamer tag" autocomplete="off" />
+        <input id="@PlayerNameId" @bind="_playerName" placeholder="Enter your gamer tag" autocomplete="off" required aria-invalid="@(!string.IsNullOrWhiteSpace(_error))" aria-describedby="@(_error is null ? null : $"{PlayerNameId}Error")" />
     </div>
 
     <div class="form-field">
@@ -19,7 +19,7 @@
 
     @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <p class="search-error" role="alert">@_error</p>
+        <p id="@($"{PlayerNameId}Error")" class="search-error" role="alert">@_error</p>
     }
 
     <button class="search-button" type="submit" disabled="@_isLoading">
@@ -64,7 +64,7 @@
             PlayerLookupResult result = await ApiClient.GetPlayerAsync(playerName, platform);
             result.PlayerName = playerName;
             result.Platform = platform;
-            LookupState.Result = result;
+            await LookupState.SaveAsync(result);
 
             Navigation.NavigateTo($"/results/{Uri.EscapeDataString(platform)}/{Uri.EscapeDataString(playerName)}");
         }

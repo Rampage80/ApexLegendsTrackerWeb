@@ -30,3 +30,20 @@ dotnet run --project ./src/ApexLegendsTracker.Web
 ```powershell
 dotnet test
 ```
+
+## Browser accessibility tests
+
+Start the Blazor app in another terminal, then install the Playwright browser once:
+
+```powershell
+dotnet run --project ./ApexLegendsTracker.Web --urls http://localhost:5001
+dotnet build ./ApexLegendsTracker.Web.Tests
+pwsh ./ApexLegendsTracker.Web.Tests/bin/Debug/net10.0/playwright.ps1 install chromium
+```
+
+Run the UI and WCAG-focused checks against that app:
+
+```powershell
+$env:PLAYWRIGHT_BASE_URL = "http://localhost:5001"
+dotnet test ./ApexLegendsTracker.Web.Tests --filter FullyQualifiedName~HomeAccessibilityPlaywrightTests
+```

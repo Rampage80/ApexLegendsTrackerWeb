@@ -1,11 +1,22 @@
 @page "/results/{Platform}/{PlayerName}"
+@inject IApexTrackerApiClient ApiClient
 @inject PlayerLookupState LookupState
 
 <PageTitle>Player Results</PageTitle>
 
-@if (_result is null)
+@if (_isLoading)
 {
-    <div class="panel">No player lookup result is available.</div>
+    <section class="panel" aria-live="polite">
+        <h1>Player Results</h1>
+        <p class="empty-state">Restoring player results...</p>
+    </section>
+}
+else if (_result is null)
+{
+    <section class="panel" aria-labelledby="results-empty-heading">
+        <h1 id="results-empty-heading">Player Results</h1>
+        <p class="empty-state">No player lookup result is available.</p>
+    </section>
 }
 else
 {
@@ -20,7 +31,7 @@ else
             <header class="results-header">
                 <div class="player-summary">
                     <div class="eyebrow">Player overview</div>
-                    <h2>(@_result.Global.Tag) @PlayerName • @Platform</h2>
+                    <h1>(@_result.Global.Tag) @PlayerName • @Platform</h1>
                     <p>Level @_result.Global.Level (@_result.Global.ToNextLevelPercent% to next level) • @_result.Realtime.CurrentStateAsText</p>
                 </div>
 
@@ -42,7 +53,7 @@ else
 
     <section class="panel rank-section">
         <div class="panel-header">
-            <span>Ranking</span>
+            <h2>Ranking</h2>
             <span>Current season</span>
         </div>
 
@@ -61,7 +72,7 @@ else
 
     <section class="panel">
         <div class="panel-header">
-            <span>Selected legend</span>
+            <h2>Selected legend</h2>
             <span>Currently equipped</span>
         </div>
 
@@ -101,7 +112,7 @@ else
 
         <section class="panel">
             <div class="panel-header">
-                <span>Characters</span>
+                <h2>Characters</h2>
                 <span>@characters.Count() tracked</span>
             </div>
 
@@ -146,10 +157,37 @@ else
     private NavigationManager Navigation { get; set; } = default!;
 
     private PlayerLookupResult? _result;
+    private bool _isLoading = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnParametersSetAsync()
     {
-        _result = LookupState.Result;
+        _isLoading = true;
+        try
+        {
+            PlayerLookupResult? savedResult = await LookupState.RestoreAsync();
+            if (savedResult is not null &&
+                string.Equals(savedResult.PlayerName, PlayerName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(savedResult.Platform, Platform, StringComparison.OrdinalIgnoreCase))
+            {
+                _result = savedResult;
+            }
+            else
+            {
+                PlayerLookupResult result = await ApiClient.GetPlayerAsync(PlayerName, Platform);
+                result.PlayerName = PlayerName;
+                result.Platform = Platform;
+                await LookupState.SaveAsync(result);
+                _result = result;
+            }
+        }
+        catch
+        {
+            _result = null;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     private void GoHome()

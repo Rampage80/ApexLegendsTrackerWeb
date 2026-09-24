@@ -1,8 +1,9 @@
 @inject IApexTrackerApiClient ApiClient
+@inject IJSRuntime JSRuntime
 
 <article class="panel chat-panel">
     <div class="panel-header">
-        <span>Ask AI about Apex</span>
+        <h2>Ask AI about Apex</h2>
         <span>*Answers based on 2024 or older data</span>
     </div>
 
@@ -27,10 +28,10 @@
 
     @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <p class="search-error">@_error</p>
+        <p class="search-error" role="alert">@_error</p>
     }
 
-    <form class="chat-input-row" @onsubmit="SendAsync">
+    <form class="chat-input-row" @onsubmit="SendAsync" aria-busy="@_isSending">
         <label for="chatMessage" class="visually-hidden">Your Apex Legends question</label>
         <input
             id="chatMessage"
@@ -38,7 +39,8 @@
             @bind:event="oninput"
             placeholder="e.g. how do I counter a Wraith?"
             disabled="@_isSending"
-            maxlength="500" />
+            maxlength="500"
+            autocomplete="off" />
         <button type="submit" class="search-button" disabled="@(_isSending || string.IsNullOrWhiteSpace(_draftMessage))">
             @(_isSending ? "Sending..." : "Send")
         </button>
@@ -46,10 +48,31 @@
 </article>
 
 @code {
+    private const string StorageKey = "apexTracker.chatMessages";
     private readonly List<ChatMessage> _messages = [];
     private string _draftMessage = string.Empty;
     private bool _isSending;
     private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string? serializedMessages = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+        if (!string.IsNullOrWhiteSpace(serializedMessages))
+        {
+            try
+            {
+                List<ChatMessage>? savedMessages = System.Text.Json.JsonSerializer.Deserialize<List<ChatMessage>>(serializedMessages);
+                if (savedMessages is not null)
+                {
+                    _messages.AddRange(savedMessages);
+                }
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", StorageKey);
+            }
+        }
+    }
 
     private async Task SendAsync()
     {
@@ -62,12 +85,14 @@
         _error = null;
         _isSending = true;
         _messages.Add(new ChatMessage(message, IsUser: true));
+        await SaveMessagesAsync();
         _draftMessage = string.Empty;
 
         try
         {
             ChatResponse response = await ApiClient.SendChatMessageAsync(new ChatRequest(message));
             _messages.Add(new ChatMessage(response.Reply, IsUser: false));
+            await SaveMessagesAsync();
         }
         catch (Exception exception)
         {
@@ -78,6 +103,12 @@
         {
             _isSending = false;
         }
+    }
+
+    private async Task SaveMessagesAsync()
+    {
+        string serializedMessages = System.Text.Json.JsonSerializer.Serialize(_messages);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", StorageKey, serializedMessages);
     }
 
     private sealed record ChatMessage(string Text, bool IsUser);
